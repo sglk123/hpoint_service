@@ -1,0 +1,7 @@
+port: 0.0.0.0:6666
+db:
+  host: localhost
+  port: 5432
+  user: sglk
+  password: 123
+  dbname: mydatabase
