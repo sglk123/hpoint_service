@@ -17,8 +17,11 @@ stop:
 clean:
 	docker rmi $(IMAGE_NAME):$(IMAGE_TAG)
 
-run_binary:
+run_binary_websocket:
 	cargo run --manifest-path network_websocket/Cargo.toml -- --config ./network_websocket/config.yaml
+
+run_binary_grpc:
+	cargo run --manifest-path network_grpc/Cargo.toml -- --config ./network_grpc/config.yaml
 
 run_pg:
 	sudo apt update

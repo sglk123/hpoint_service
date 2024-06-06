@@ -39,6 +39,7 @@ async fn create_database(conf: InitDbConfig) -> Result<(), Error> {
     Ok(())
 }
 
+#[derive(Debug, Default)]
 pub struct PgConfig {
     pub host: String,
     pub port: u16,
@@ -49,18 +50,25 @@ pub struct PgConfig {
 
 
 // global db context
+#[derive(Debug)]
 pub struct DbPg {
     pub pool: ConPool,
     pub conf: PgConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq,::prost::Message)]
 pub struct Event {
+    #[prost(int32, tag = 1)]
     pub id: i32,
+    #[prost(string, tag = 2)]
     pub pk_owner: String,
+    #[prost(string, tag = 3)]
     pub pk_user: String,
-    pub event_meta: Vec<u8>,  // json utf8 ?
+    #[prost(bytes, tag = 4)]
+    pub event_meta: Vec<u8>,
+    #[prost(string, tag = 5)]
     pub event_type: String,
+    #[prost(int32, tag = 6)]
     pub point_amount: i32,
 }
 

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package pointservice;
+
+service PointService {
+  rpc InsertEvent(InsertRequest) returns (InsertResponse);
+  rpc QueryEvent (QueryEventRequest) returns (ResponseEvents);
+}
+
+message InsertRequest {
+  Event event = 1;
+}
+
+message InsertResponse {
+  string insertId = 1;
+}
+
+message Event {
+  string pk_owner = 1;
+  string pk_user = 2;
+  bytes event_meta = 3;
+  string event_type = 4;
+}
+
+message QueryEventRequest {}
+
+message ResponseEvents {
+  repeated Event events = 1;
+}
