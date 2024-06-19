@@ -19,3 +19,4 @@ hpoint_db_pg = { version = "0.1.0", path = "../hpoint_db_pg" }
 log = "0.4.20"
 log4rs = "1.0"
 env_logger = "0.9.3"
+warp = "0.3.2"

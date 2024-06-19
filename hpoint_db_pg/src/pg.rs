@@ -56,7 +56,7 @@ pub struct DbPg {
     pub conf: PgConfig,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq,::prost::Message)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, ::prost::Message)]
 pub struct Event {
     #[prost(int32, tag = 1)]
     pub id: i32,
@@ -125,6 +125,36 @@ impl DbPg {
         }
         let latest_id: i32 = id[0].try_get(0).unwrap();
         latest_id
+    }
+
+    pub async fn query_event_by_range_id(&self, start_id: i32, last_id: i32) -> Vec<Event> {
+        let mut conn = self.pool.get().await.unwrap();
+        let rows = if last_id != -1 { conn.query("SELECT*FROM event WHERE id >= $1 AND id <= $2 ORDER BY id", &[&start_id, &last_id]).await.unwrap() } else {
+            conn.query("SELECT*FROM event WHERE id >= $1 ORDER BY id", &[&start_id]).await.unwrap()
+        };
+
+        let mut events = Vec::new();
+        for row in rows.iter() {
+            let id: i32 = row.try_get(0).unwrap();
+            let pk_owner: String = row.try_get(1).unwrap();
+            let pk_user: String = row.try_get(2).unwrap();
+            let event_meta: Vec<u8> = row.try_get(3).unwrap();
+            let event_type: String = row.try_get(4).unwrap();
+            let point_amount: i32 = row.try_get(5).unwrap();
+            println!("{} {} {} {:?} {} {}", id, pk_owner, pk_user, event_meta, event_type, point_amount);
+            let event = Event {
+                id,
+                pk_owner,
+                pk_user,
+                event_meta,
+                event_type,
+                point_amount,
+            };
+
+            events.push(event);
+        }
+
+        events
     }
 
     pub async fn query_all_from_event(&self) -> Vec<Event> {

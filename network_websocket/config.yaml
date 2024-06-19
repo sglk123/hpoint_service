@@ -1,7 +1,8 @@
-port: 0.0.0.0:6666
+port: 127.0.0.1:8888
+wport: 0.0.0.0:8889
 db:
   host: localhost
   port: 5432
-  user: sglk
+  user: postgres
   password: 123
-  dbname: mydatabase
+  dbname: sglk_sample1

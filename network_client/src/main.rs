@@ -4,6 +4,7 @@ use futures_util::{SinkExt, StreamExt};
 use tokio::net::TcpStream;
 use url::Url;
 use serde::{Deserialize, Serialize};
+use bincode::deserialize;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,12 +35,25 @@ struct Event {
     event_type: String,
 }
 
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub struct EventMeta {
+    pub event_type: i32,
+    pub timestamp: i64,
+    pub address: String,
+    pub project_name: String,
+    pub sign: String,
+    pub sign_method: String,
+    pub event_date: String,
+    pub duration: i32,
+}
 async fn websocket_client() -> Result<(), Box<dyn std::error::Error>> {
     let url = Url::parse("ws://173.199.118.240:6666").unwrap();
+    //let url = Url::parse("ws://173.199.118.240:6666").unwrap();
     let (ws_stream, _) = connect_async(url).await.expect("Failed to connect");
     let (mut write, mut read) = ws_stream.split();
 
-    // Example: Insert Event
+   //Example: Insert Event
     let event = Event {
         pk_owner: "owner1".to_string(),
         pk_user: "user1".to_string(),
@@ -47,9 +61,10 @@ async fn websocket_client() -> Result<(), Box<dyn std::error::Error>> {
         event_type: "type1".to_string(),
     };
     let message = Message::InsertEvent(event);
-    let serialized_message = serde_json::to_string(&message)?;
-    // let message = Message::QueryEvent;
+    //  let message =Message::QueryEvent;
     // let serialized_message = serde_json::to_string(&message)?;
+    // let message = Message::QueryEvent;
+     let serialized_message = serde_json::to_string(&message)?;
 
     write.send(WsMessage::Text(serialized_message)).await?;
 
@@ -60,13 +75,21 @@ async fn websocket_client() -> Result<(), Box<dyn std::error::Error>> {
             let response: Message = serde_json::from_str(&text)?;
             match response {
                 Message::Response(events) => {
-                    println!("Received events: {:?}", events);
+                  //  println!("Received events: {:?}", events[events.len()-1].clone());
+                    let decoded: EventMeta = deserialize(&*events[events.len() - 4].event_meta).expect("failed to decode");
+
+                    // 打印反序列化后的结构体
+                    println!("{:?}", decoded);
+                    write.close().await.expect("TODO: panic message");
                 }
                 Message::ResponseWriteId(id) => {
                     println!("Received write id : {}", id);
+                    write.close().await.expect("TODO: panic message");
                 }
 
-                _ => {}
+                _ => {
+                    write.close().await.expect("TODO: panic message");
+                }
             }
         }
     }
